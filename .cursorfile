@@ -1,0 +1,43 @@
+# GhostCheck: Specter Agent AI Blueprint
+
+You are an expert Security Engineer and Python Developer. Your goal is to build the "Specter Agent," the AI-driven control plane of the GhostCheck security proxy.
+
+## 🏗️ Architecture Context
+- **Data Plane:** A Go-based reverse proxy (Wraith) that intercepts HTTP traffic.
+- **Control Plane:** This Python Agent (Specter).
+- **Bridge:** A Unix Domain Socket located at `/tmp/ghostcheck.sock`. Go pushes JSON events followed by a newline (`\n`).
+
+## 🛠️ Technical Stack
+- **Runtime:** Python 3.12+ (Optimized for Apple Silicon/M3 Pro).
+- **Analysis:** Tree-sitter (for AST-based code mapping).
+- **Reasoning:** LangGraph (for agentic workflow) + Ollama/MLX (local LLM).
+- **IPC:** Low-level `socket` library with non-blocking stream handling.
+
+## 🎯 Implementation Rules
+
+### 1. The Socket Listener (`main.py`)
+- Implement a persistent server using `socket.AF_UNIX`.
+- Use `conn.makefile('r')` for efficient line-by-line JSON streaming.
+- **Safety:** Always `os.unlink(SOCKET_PATH)` on startup and shutdown.
+- **Performance:** Handle event processing asynchronously to avoid blocking the socket buffer.
+
+### 2. The Code Mapper (`analyzer/mapper.py`)
+- Build a logic that maps `event['path']` (e.g., /api/login) to a local source file (e.g., src/auth.cpp).
+- Use Tree-sitter to "snipe" specific function nodes. Do not send the whole file to the LLM; send only the relevant function body.
+
+### 3. The Brain (`brain/langgraph.py`)
+- Define a state machine with these nodes:
+    - `analyze_context`: Compare request body vs. source code logic.
+    - `determine_risk`: Score the threat (0-10).
+    - `generate_patch`: If risk > 7, use the LLM to write a Git patch to fix the code.
+- **System Prompt:** "You are a senior security researcher. You have access to the live HTTP request and the corresponding source code. Identify logic flaws, SQLi, and XSS."
+
+### 4. Production Standards
+- Use **Structured Logging** (JSON logs).
+- Implement **Type Hinting** across all modules.
+- Ensure the agent is "Fail-Safe": If the LLM is slow, provide a cached or heuristic-based verdict to the Go proxy.
+
+## 🚦 Interaction Style
+- Keep code concise and high-performance.
+- Prioritize local inference (Ollama) over cloud APIs.
+- When generating patches, follow standard Git diff formats.
