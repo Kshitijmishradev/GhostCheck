@@ -3,3 +3,7 @@ __pycache__/
 *.pyc
 shared/*.sock
 bin/
+
+# Ignore local demo pages
+/index.html
+/web/index.html
