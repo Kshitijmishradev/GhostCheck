@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"time"
 )
 
 // InterceptEvent represents the data structure we send to the Python Agent
@@ -60,5 +61,6 @@ func interceptAndSend(req *http.Request) {
 	// 6. Push to the Unix Socket (The Bridge)
 	// We wrap this in an async call inside main, but the socket write itself 
     // should be handled by our dedicated socket client.
-	pushToSocket(payload)
+	client := GetSocketClient("../shared/ghostcheck.sock")
+    client.Push(payload)
 }
