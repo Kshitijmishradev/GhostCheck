@@ -12,6 +12,8 @@
 
 ### *The request you see. The vulnerability you don't.*
 
+🔗 [Project page](https://kshitijmishradev.github.io/ghostcheck-page/)
+
 <br/>
 
 [![Go](https://img.shields.io/badge/Go_1.22+-00ADD8?style=for-the-badge&logo=go&logoColor=white)](https://go.dev/)
