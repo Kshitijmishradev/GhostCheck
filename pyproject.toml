@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ghostcheck"
+version = "0.2.0"
+description = "Code-aware endpoint security scanner: finds injectable HTTP endpoints and generates a proof-of-concept exploit for each."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "kshitijmishra" }]
+keywords = ["security", "sast", "scanner", "injection", "sqli", "appsec", "tree-sitter"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Topic :: Security",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "tree-sitter>=0.23",
+    "tree-sitter-language-pack>=1.1.4",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+ghostcheck = "ghostcheck_scanner.__main__:main"
+
+[project.urls]
+Homepage = "https://kshitijmishradev.github.io/ghostcheck-page/"
+
+[tool.setuptools]
+packages = ["ghostcheck_scanner", "ghostcheck_scanner.detectors"]
+
+[tool.setuptools.package-data]
+ghostcheck_scanner = ["README.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
