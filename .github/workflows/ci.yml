@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Run tests
+        run: pytest -q
+      - name: Self-scan the sample apps (smoke test)
+        run: |
+          ghostcheck scan sample_vulnerable_app --fail-on NONE
+          ghostcheck scan sample_vulnerable_express --fail-on NONE
+
+  security-gate:
+    # Demonstrates GhostCheck as a CI security gate: this job SHOULD fail,
+    # because the sample apps are deliberately vulnerable. Marked
+    # continue-on-error so it stays green while still showing the report.
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e .
+      - name: Gate on HIGH+ findings
+        run: ghostcheck scan sample_vulnerable_app --fail-on HIGH
