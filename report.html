@@ -1,0 +1,166 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GhostCheck Report</title>
+<style>
+:root{--bg:#0a0c13;--panel:#12151f;--line:#222839;--ink:#e8ebf5;--muted:#98a0b8;
+--vio:#9a8cff;--crit:#ff6a61;--high:#ff8a5c;--med:#f2b64a;--low:#5cc8ff;--ok:#46d489;
+--mono:'IBM Plex Mono',ui-monospace,Menlo,monospace}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,sans-serif;line-height:1.55}
+.wrap{max-width:900px;margin:0 auto;padding:34px 20px 60px}
+h1{font-family:var(--mono);letter-spacing:.14em;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 22px;font-size:14px}
+.summary{display:flex;flex-wrap:wrap;gap:20px;background:var(--panel);border:1px solid var(--line);
+border-radius:12px;padding:18px 20px;margin-bottom:26px}
+.summary div span{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.summary div b{font-size:22px}
+.pills{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-left:auto}
+.pill{font-family:var(--mono);font-size:12px;padding:4px 10px;border-radius:20px;border:1px solid var(--line)}
+.pill.critical{color:var(--crit)}.pill.high{color:var(--high)}.pill.medium{color:var(--med)}
+.pill.low{color:var(--low)}.pill.ok{color:var(--ok)}
+.card{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--muted);
+border-radius:10px;padding:18px 20px;margin-bottom:16px}
+.card.critical{border-left-color:var(--crit)}.card.high{border-left-color:var(--high)}
+.card.medium{border-left-color:var(--med)}.card.low{border-left-color:var(--low)}
+.card header{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.card h3{margin:0;font-size:17px}
+.sev{font-family:var(--mono);font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px}
+.sev.critical{background:#2a1512;color:var(--crit)}.sev.high{background:#2a1a12;color:var(--high)}
+.sev.medium{background:#2a2410;color:var(--med)}.sev.low{background:#0e1f2a;color:var(--low)}
+.cwe{margin-left:auto;color:var(--muted);font-family:var(--mono);font-size:12px}
+.ep{margin:2px 0}.loc{color:var(--muted);font-size:13px;margin:2px 0 10px}
+code{font-family:var(--mono);font-size:.85em;background:#0e1119;border:1px solid var(--line);border-radius:5px;padding:1px 5px;color:var(--vio)}
+pre{font-family:var(--mono);font-size:12.5px;overflow-x:auto;background:#0e1119;border:1px solid var(--line);
+border-radius:8px;padding:12px 14px;margin:6px 0}
+pre.poc{color:var(--high)}.lbl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:12px 0 0}
+.fix{font-size:14px;color:var(--ink);background:#101826;border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:10px 0 0}
+.fix b{color:var(--ok)}
+h2{font-size:15px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:32px 0 10px}
+ul.clean{list-style:none;padding:0;margin:0;display:grid;gap:6px}
+ul.clean li{display:flex;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:13px}
+ul.clean li span{color:var(--muted)}
+footer{color:var(--muted);font-size:12px;margin-top:36px;font-family:var(--mono)}
+</style></head><body><div class="wrap">
+<h1>👻 GHOSTCHECK</h1>
+<p class="sub">Endpoint security report · sample_vulnerable_app · 2026-09-02 04:19 UTC</p>
+<div class="summary">
+  <div><span>Endpoints</span><b>13</b></div>
+  <div><span>Vulnerable</span><b style="color:var(--high)">9</b></div>
+  <div><span>Findings</span><b>9</b></div>
+  <div class="pills"><span class="pill critical">2 CRITICAL</span><span class="pill high">6 HIGH</span><span class="pill medium">1 MEDIUM</span></div>
+</div>
+
+      <article class="card critical">
+        <header>
+          <span class="sev critical">CRITICAL</span>
+          <h3>OS Command Injection</h3><span class="cwe">CWE-78</span>
+        </header>
+        <p class="ep"><b>GET /ping</b> &rarr; ping()</p>
+        <p class="loc">routes/admin.py:14 · sink <code>popen()</code> · param <code>host</code></p>
+        <pre class="ev">output = os.popen(&quot;ping -c 1 &quot; + host).read()</pre>
+        <p class="lbl">Proof-of-concept exploit</p>
+        <pre class="poc">curl &#x27;http://TARGET/ping?host=127.0.0.1%3B%20cat%20%2Fetc%2Fpasswd&#x27;</pre>
+        <p class="fix"><b>Fix.</b> Avoid the shell: pass arguments as a list to subprocess.run() without shell=True, and validate/allow-list the input.</p>
+      </article>
+      <article class="card critical">
+        <header>
+          <span class="sev critical">CRITICAL</span>
+          <h3>OS Command Injection</h3><span class="cwe">CWE-78</span>
+        </header>
+        <p class="ep"><b>POST /backup</b> &rarr; backup()</p>
+        <p class="loc">routes/admin.py:22 · sink <code>call()</code> · param <code>dir</code></p>
+        <pre class="ev">subprocess.call(f&quot;tar czf backup.tgz {target}&quot;, shell=True)</pre>
+        <p class="lbl">Proof-of-concept exploit</p>
+        <pre class="poc">curl -X POST &#x27;http://TARGET/backup&#x27; \
+     --data-urlencode &#x27;dir=127.0.0.1; cat /etc/passwd&#x27;</pre>
+        <p class="fix"><b>Fix.</b> Avoid the shell: pass arguments as a list to subprocess.run() without shell=True, and validate/allow-list the input.</p>
+      </article>
+      <article class="card high">
+        <header>
+          <span class="sev high">HIGH</span>
+          <h3>SQL Injection</h3><span class="cwe">CWE-89</span>
+        </header>
+        <p class="ep"><b>GET /users/&lt;user_id&gt;</b> &rarr; get_user()</p>
+        <p class="loc">routes/auth.py:18 · sink <code>execute()</code> · param <code>user_id</code></p>
+        <pre class="ev">row = conn.execute(query).fetchone()</pre>
+        <p class="lbl">Proof-of-concept exploit</p>
+        <pre class="poc">curl &#x27;http://TARGET/users/%27%20OR%20%271%27%3D%271%27%20--%20-&#x27;</pre>
+        <p class="fix"><b>Fix.</b> Use parameterised queries (placeholders + a params tuple), never string concatenation or f-strings to build SQL.</p>
+      </article>
+      <article class="card high">
+        <header>
+          <span class="sev high">HIGH</span>
+          <h3>SQL Injection</h3><span class="cwe">CWE-89</span>
+        </header>
+        <p class="ep"><b>POST /login</b> &rarr; login()</p>
+        <p class="loc">routes/auth.py:29 · sink <code>execute()</code> · param <code>username</code></p>
+        <pre class="ev">user = conn.execute(q).fetchone()</pre>
+        <p class="lbl">Proof-of-concept exploit</p>
+        <pre class="poc">curl -X POST &#x27;http://TARGET/login&#x27; \
+     --data-urlencode &#x27;username=&#x27; OR &#x27;1&#x27;=&#x27;1&#x27; -- -&#x27;</pre>
+        <p class="fix"><b>Fix.</b> Use parameterised queries (placeholders + a params tuple), never string concatenation or f-strings to build SQL.</p>
+      </article>
+      <article class="card high">
+        <header>
+          <span class="sev high">HIGH</span>
+          <h3>SQL Injection</h3><span class="cwe">CWE-89</span>
+        </header>
+        <p class="ep"><b>GET /search</b> &rarr; search_users()</p>
+        <p class="loc">routes/auth.py:40 · sink <code>execute()</code> · param <code>q</code></p>
+        <pre class="ev">rows = conn.execute(</pre>
+        <p class="lbl">Proof-of-concept exploit</p>
+        <pre class="poc">curl &#x27;http://TARGET/search?q=%27%20OR%20%271%27%3D%271%27%20--%20-&#x27;</pre>
+        <p class="fix"><b>Fix.</b> Use parameterised queries (placeholders + a params tuple), never string concatenation or f-strings to build SQL.</p>
+      </article>
+      <article class="card high">
+        <header>
+          <span class="sev high">HIGH</span>
+          <h3>Path Traversal</h3><span class="cwe">CWE-22</span>
+        </header>
+        <p class="ep"><b>GET /download</b> &rarr; download()</p>
+        <p class="loc">routes/files.py:16 · sink <code>send_file()</code> · param <code>name</code></p>
+        <pre class="ev">return send_file(path)</pre>
+        <p class="lbl">Proof-of-concept exploit</p>
+        <pre class="poc">curl &#x27;http://TARGET/download?name=..%2F..%2F..%2F..%2Fetc%2Fpasswd&#x27;</pre>
+        <p class="fix"><b>Fix.</b> Reduce the input with os.path.basename() and confirm the resolved path stays inside the intended directory before opening it.</p>
+      </article>
+      <article class="card high">
+        <header>
+          <span class="sev high">HIGH</span>
+          <h3>Path Traversal</h3><span class="cwe">CWE-22</span>
+        </header>
+        <p class="ep"><b>GET /read</b> &rarr; read_file()</p>
+        <p class="loc">routes/files.py:23 · sink <code>open()</code> · param <code>file</code></p>
+        <pre class="ev">with open(os.path.join(UPLOAD_DIR, fname)) as fh:</pre>
+        <p class="lbl">Proof-of-concept exploit</p>
+        <pre class="poc">curl &#x27;http://TARGET/read?file=..%2F..%2F..%2F..%2Fetc%2Fpasswd&#x27;</pre>
+        <p class="fix"><b>Fix.</b> Reduce the input with os.path.basename() and confirm the resolved path stays inside the intended directory before opening it.</p>
+      </article>
+      <article class="card high">
+        <header>
+          <span class="sev high">HIGH</span>
+          <h3>Server-Side Request Forgery</h3><span class="cwe">CWE-918</span>
+        </header>
+        <p class="ep"><b>GET /fetch</b> &rarr; fetch_url()</p>
+        <p class="loc">routes/files.py:33 · sink <code>urlopen()</code> · param <code>url</code></p>
+        <pre class="ev">data = urllib.request.urlopen(target).read()</pre>
+        <p class="lbl">Proof-of-concept exploit</p>
+        <pre class="poc">curl &#x27;http://TARGET/fetch?url=http%3A%2F%2F169.254.169.254%2Flatest%2Fmeta-data%2F&#x27;</pre>
+        <p class="fix"><b>Fix.</b> Allow-list the hosts/schemes the server may request; reject internal addresses and cloud-metadata endpoints.</p>
+      </article>
+      <article class="card medium">
+        <header>
+          <span class="sev medium">MEDIUM</span>
+          <h3>Reflected Cross-Site Scripting</h3><span class="cwe">CWE-79</span>
+        </header>
+        <p class="ep"><b>GET /greet</b> &rarr; greet()</p>
+        <p class="loc">routes/admin.py:30 · sink <code>response()</code> · param <code>name</code></p>
+        <pre class="ev">return &quot;&lt;h1&gt;Hello &quot; + name + &quot;&lt;/h1&gt;&quot;</pre>
+        <p class="lbl">Proof-of-concept exploit</p>
+        <pre class="poc">curl &#x27;http://TARGET/greet?name=%3Cscript%3Ealert%281%29%3C%2Fscript%3E&#x27;</pre>
+        <p class="fix"><b>Fix.</b> Escape user input before placing it in HTML (markupsafe.escape / template autoescaping); do not build HTML with string concatenation.</p>
+      </article>
+<h2>Clean endpoints (4)</h2>
+<ul class="clean"><li><code>GET /health</code> <span>health()</span></li><li><code>GET /ping_safe</code> <span>ping_safe()</span></li><li><code>GET /users_safe/&lt;user_id&gt;</code> <span>get_user_safe()</span></li><li><code>GET /download_safe</code> <span>download_safe()</span></li></ul>
+<footer>Generated by GhostCheck · static taint analysis + code-guided PoC · findings are indicators, verify before acting</footer>
+</div></body></html>
